@@ -35,6 +35,12 @@ void FCFS(vector<Process> p){
 
 }
 
+void SJF(vector<Process> p) {
+    sort(p.begin(), p.end(), [](const Process& a, const Process& b){ return a.burst < b.burst; });
+    vector<int> TT(p.size()), WT(p.size());
+    cout << "Scheduling chart: ";
+}
+
 int main(){
 
     int q;
