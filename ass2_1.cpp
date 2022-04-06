@@ -3,6 +3,8 @@
 #include <fstream>
 #include <algorithm>
 #include <map>
+#include <vector>
+#include <sstream>
 
 using namespace std;
 
@@ -100,7 +102,145 @@ void SJF(vector<Process> p) {
 }
 
 void PreemptivePriority(vector<Process> p) {
+	priority_queue<int> process;
+	vector<string> processName;
+	vector<int> arrivalTime;
+	vector<int> cpuBurst;
+	vector<int> priority;
+	for (int i = 0; i < p.size(); i++) {
+		processName.push_back(p[i].name);
+		arrivalTime.push_back(p[i].arrivalTime);
+		cpuBurst.push_back(p[i].burst);
+		priority.push_back(p[i].priority * -1);
+	}
+	vector<int> oldBurst = cpuBurst;
+	int currentTime = 0;
+	int* WT = new int[p.size()]();
+	int* TT = new int[p.size()]();
+	string oldProcess = "";
+	stringstream ss;
+	while (true) {
+		int indexProcess = -1;
+		auto push = find(arrivalTime.begin(), arrivalTime.end(), currentTime);
+		if (push != arrivalTime.end()) {
+			int temp = distance(arrivalTime.begin(), push);
+			process.push(priority[temp]);
+		}
+		int ProcessInProcess = process.top();
+		process.pop();
+		auto it = find(priority.begin(), priority.end(), ProcessInProcess);
+		if (it != priority.end())
+			indexProcess = distance(priority.begin(), it);
+		string Name = processName[indexProcess];
+		if (oldProcess != Name) {
+			ss << currentTime << " ~ " << Name << " ~ ";
+			oldProcess = Name;
+		}
+		currentTime += 1;
+		cpuBurst[indexProcess] -= 1;
+		if (cpuBurst[indexProcess] == 0) {
+			TT[indexProcess] = currentTime - arrivalTime[indexProcess];
+			WT[indexProcess] = TT[indexProcess] - oldBurst[indexProcess];
+		}
+		else
+			process.push(priority[indexProcess]);
+		if (count(cpuBurst.begin(), cpuBurst.end(), 0) == cpuBurst.size()) {
+			ss << currentTime;
+			break;
+		}
+	}
+	double AVG_WT = 0;
+	double AVG_TT = 0;
+	for (int i = 0; i < p.size(); i++) {
+		AVG_WT += WT[i];
+		AVG_TT += TT[i];
+	}
+	AVG_WT /= p.size();
+	AVG_TT /= p.size();
+	string chart = ss.str();
+	ofstream out;
+	out.open("PS_Preemptive Version.txt", ios::out);
+	out << "Scheduling chart: " << endl;
+	out << "\t" << chart << endl;
+	for (int i = 0; i < p.size(); i++) {
+		out << processName[i] << ":\t" << "TT = " << TT[i] << " WT = " << WT[i] << endl;
+	}
+	out << "Average:	TT = " << AVG_TT << " WT = " << AVG_WT;
+	out.close();
+}
 
+void RR(vector<Process> p, int quantum){
+    stringstream ss;
+	queue<string> process;
+	vector<string> processName;
+	vector<int> arrivalTime;
+	vector<int> cpuBurst;
+	for (int i = 0; i < p.size(); i++) {
+		processName.push_back(p[i].name);
+		arrivalTime.push_back(p[i].arrivalTime);
+		cpuBurst.push_back(p[i].burst);
+	}
+	vector<int> oldBurst = cpuBurst;
+	int currentTime = 0;
+	int* WT = new int[p.size()]();
+	int* TT = new int[p.size()]();
+	string oldProcess = "";
+	auto start = find(arrivalTime.begin(), arrivalTime.end(), 0);
+	int temp = distance(arrivalTime.begin(), start);
+	process.push(processName[distance(arrivalTime.begin(), start)]);
+	while (true) {
+		int indexProcess = -1;
+		for (int i = currentTime + 1; i <= currentTime + quantum; i++) {
+			auto it = find(arrivalTime.begin(), arrivalTime.end(), i);
+			if (it != arrivalTime.end()) {
+				int temp = distance(arrivalTime.begin(), it);
+				process.push(processName[temp]);
+			}
+		}
+	string ProcessInProcess = process.front();
+	process.pop();
+	auto it = find(processName.begin(), processName.end(), ProcessInProcess);
+	if (it != processName.end())
+		indexProcess = distance(processName.begin(), it);
+	if (oldProcess != ProcessInProcess) {
+		ss << currentTime << " ~ " << ProcessInProcess << " ~ ";
+		oldProcess = ProcessInProcess;
+	}
+	if (cpuBurst[indexProcess] > quantum) {
+		currentTime += quantum;
+		cpuBurst[indexProcess] -= quantum;
+	}
+	else {
+		currentTime += cpuBurst[indexProcess];
+		cpuBurst[indexProcess] = 0;
+		TT[indexProcess] = currentTime - arrivalTime[indexProcess];
+		WT[indexProcess] = TT[indexProcess] - oldBurst[indexProcess];
+	}
+	if (cpuBurst[indexProcess] > 0) 
+			process.push(ProcessInProcess);
+	if (count(cpuBurst.begin(), cpuBurst.end(), 0) == cpuBurst.size()) {
+			ss << currentTime;
+			break;
+	    }
+	}
+	double AVG_WT = 0;
+	double AVG_TT = 0;
+	for (int i = 0; i < p.size(); i++) {
+		AVG_WT += WT[i];
+		AVG_TT += TT[i];
+	}
+	AVG_WT /= p.size();
+	AVG_TT /= p.size();
+	string chart = ss.str();
+	ofstream out;
+	out.open("RR.txt", ios::out);
+	out << "Scheduling chart: " << endl;
+	out << "\t" << chart << endl;
+	for (int i = 0; i < p.size(); i++) {
+		out << processName[i] << ":\t" << "TT = " << TT[i] << " WT = " << WT[i] << endl;
+	}
+	out << "Average:	TT = " << AVG_TT << " WT = " << AVG_WT;
+	out.close();
 }
 
 int main(){
