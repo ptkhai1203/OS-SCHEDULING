@@ -36,9 +36,18 @@ void FCFS(vector<Process> p){
 }
 
 void SJF(vector<Process> p) {
+    int totalTime = 0;
     sort(p.begin(), p.end(), [](const Process& a, const Process& b){ return a.burst < b.burst; });
     vector<int> TT(p.size()), WT(p.size());
-    cout << "Scheduling chart: ";
+    cout << "Scheduling chart: 0";
+    for (int i = 0; i < p.size(); i++) {
+        
+    }
+    // 0 ~P1~ 4 ~P2~ 8 ~P3~ 11 ~P1~ 15 ~P2~ 16 ~P1~ 32
+}
+
+void PreemptivePriority(vector<Process> p) {
+
 }
 
 int main(){
