@@ -17,9 +17,9 @@ public:
 
 public:
     Process() : name(""), arrivalTime(0), burst(0), priority(0) {}
-    bool operator()(const Process& a, const Process& b){
-        return a.burst < b.burst;
-    }
+	bool operator()(Process const& a, Process const& b){
+		return a.burst > b.burst;
+	}
 };
 
 vector<Process> readFile(string filename, int& quanTum){
@@ -65,33 +65,60 @@ void FCFS(vector<Process> p){
 }
 
 void SRTN(vector<Process> p){
+    vector<Process> pp = p;
     priority_queue<Process, vector<Process>, Process> pq;
     sort(p.begin(), p.end(), [&](const Process& a, const Process& b){return a.arrivalTime > b.arrivalTime;});
     vector<string> chart;
-    map<string, pair<int, int>> t;
-    Process cur;
+    map<string, int> TT;
+    map<string, int> WT;
+    Process cur = p.back();
+    p.pop_back();
     int time = 0;
-    for(int i = 0; ;++i){
-        chart.push_back(to_string(time));
-        if(i == p.back().arrivalTime){
+    chart.push_back(to_string(time));
+    while(!pq.empty() || p.size() != 0){
+        if(!pq.empty()){
+            if(pq.top().burst < cur.burst){
+                if(cur.burst > 0)
+                    pq.push(cur);
+                chart.push_back(cur.name);
+                chart.push_back(to_string(time));
+                cur = pq.top();
+                pq.pop();
+            }
+        }
+        cur.burst--;
+        ++time;
+        if(cur.burst == 0){
+            TT[cur.name] = time - cur.arrivalTime;
+            chart.push_back(cur.name);
+            chart.push_back(to_string(time));
+            cur = pq.top();
+            pq.pop(); 
+        } 
+        if(time == p.back().arrivalTime){
             pq.push(p.back());
             p.pop_back();
         }
-        if(p.size() == 0 && pq.empty())
-            break;
-        Process nxt;
-        if(!pq.empty()){
-            nxt = pq.top();
-            pq.pop();
-        }
-        if(cur.name == "" || cur.burst > nxt.burst){
-            pq.push(cur);
-            cur = nxt;
-            chart.push_back(to_string(i));
-        }
-        chart.push_back(cur.name);
-        cout << cur.name << '\n';
+    } 
+    chart.push_back(cur.name);
+    chart.push_back(to_string(time + cur.burst)); 
+    TT[cur.name] = time + cur.burst - cur.arrivalTime;
+    int totalTT = 0;
+    int totalWT = 0;
+    for(auto _p : pp){
+        WT[_p.name] = TT[_p.name] - _p.burst;
+        totalTT += TT[_p.name];
+        totalWT += WT[_p.name];
     }
+    freopen("SRTN.txt", "w", stdout);
+    cout << "Scheduling chart: 0";
+    for(int i = 1; i < chart.size(); ++i)
+        cout << "~" << chart[i];
+    cout << '\n';
+    for(auto m : TT){
+        cout << m.first << ": \t TT = "  << m.second << " WT = " << WT[m.first] << '\n';
+    }
+    cout << "Average: \t TT = " << 1.0 * totalTT / pp.size() << "\t WT = " << 1.0 * totalWT / pp.size();
 }
 
 void SJF(vector<Process> p) {
@@ -247,12 +274,19 @@ void RR(vector<Process> p, int quantum){
 	out.close();
 }
 
+typedef void (*schedule_ptr)(vector<Process>);
+
+schedule_ptr schedule_methods[] = {
+    FCFS, SRTN, SJF, PreemptivePriority
+};
+
 int main(){
 
     int q;
     vector<Process> p = readFile("Input.txt", q);
     
-    SRTN(p);
+    for(int i = 0; i < 4; ++i)
+        schedule_methods[i](p);
 
     return 0;
 }
