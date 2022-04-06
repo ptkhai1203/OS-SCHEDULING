@@ -2,6 +2,7 @@
 #include <queue>
 #include <fstream>
 #include <algorithm>
+#include <map>
 
 using namespace std;
 
@@ -11,6 +12,12 @@ public:
     int arrivalTime;
     int burst;
     int priority;
+
+public:
+    Process() : name(""), arrivalTime(0), burst(0), priority(0) {}
+    bool operator<(const Process& a, const Process& b){
+        return a.burst < b.burst;
+    }
 };
 
 vector<Process> readFile(string filename, int& quanTum){
@@ -26,13 +33,59 @@ vector<Process> readFile(string filename, int& quanTum){
 }
 
 void FCFS(vector<Process> p){
-    queue<Process> q;
+    vector<string> chart; 
     sort(p.begin(), p.end(), [&](const Process& a, const Process& b){return a.arrivalTime < b.arrivalTime;});
-    for(int i = 0; i < p.size(); ++i)
-        cout << p[i].name << '\n';
-    for(auto pro : p)
-        q.push(pro);
+    map<string, pair<int, int>> t;
+    int time = 0;
+   
+    for(int i = 0; i < p.size(); ++i){
+        chart.push_back(to_string(time));
+        chart.push_back(p[i].name);
+        time += p[i].burst; 
+        t[p[i].name].first = time - p[i].arrivalTime;
+        t[p[i].name].second = t[p[i].name].first - p[i].burst;
+    }
+    chart.push_back(to_string(time));
+    freopen("FCFS.txt", "w", stdout);
+    cout << "Scheduling chart: ";
+    cout << chart[0];
+    for(int i = 1; i < chart.size(); ++i)
+        cout << "~" << chart[i];
+    cout << '\n';
+    int totalTT = 0;
+    int totalWT = 0;
+    for(auto m : t){
+        totalTT += m.second.first;
+        totalWT += m.second.second;
+        cout << m.first << ":\t TT = " << m.second.first << ' ' << "WT = " << m.second.second << '\n';
+    }
+    cout << "Average:\t TT = " << 1.0 * totalTT / p.size() << "\tWT = " << 1.0 * totalWT / p.size();
+}
 
+void SRTN(vector<Process> p){
+    priority_queue<Process, vector<Process>> pq;
+    sort(p.begin(), p.end(), [&](const Process& a, const Process& b){return a.arrivalTime > b.arrivalTime;});
+    vector<string> chart;
+    map<string, pair<int, int>> t;
+    Process cur;
+    int time = 0;
+    for(int i = 0; ;++i){
+        chart.push_back(to_string(time));
+        if(i == p.back().arrivalTime){
+            pq.push(p.back());
+            p.pop_back();
+        }
+        if(p.size() == 0 && pq.empty())
+            break;
+        Process nxt;
+        if(!pq.empty()){
+            nxt = pq.top();
+            pq.pop();
+        }
+        if(cur.name == "" || cur.burst > nxt.burst)
+            cur = nxt;
+        chart.push_back(cur.name);
+    }
 }
 
 int main(){
