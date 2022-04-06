@@ -251,6 +251,8 @@ int main(){
 
     int q;
     vector<Process> p = readFile("Input.txt", q);
+    RR(p,q);
+    PreemptivePriority(p);
     
     SRTN(p);
 
