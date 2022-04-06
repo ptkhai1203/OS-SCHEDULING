@@ -15,7 +15,7 @@ public:
 
 public:
     Process() : name(""), arrivalTime(0), burst(0), priority(0) {}
-    bool operator<(const Process& a, const Process& b){
+    bool operator()(const Process& a, const Process& b){
         return a.burst < b.burst;
     }
 };
@@ -63,7 +63,7 @@ void FCFS(vector<Process> p){
 }
 
 void SRTN(vector<Process> p){
-    priority_queue<Process, vector<Process>> pq;
+    priority_queue<Process, vector<Process>, Process> pq;
     sort(p.begin(), p.end(), [&](const Process& a, const Process& b){return a.arrivalTime > b.arrivalTime;});
     vector<string> chart;
     map<string, pair<int, int>> t;
@@ -82,9 +82,13 @@ void SRTN(vector<Process> p){
             nxt = pq.top();
             pq.pop();
         }
-        if(cur.name == "" || cur.burst > nxt.burst)
+        if(cur.name == "" || cur.burst > nxt.burst){
+            pq.push(cur);
             cur = nxt;
+            chart.push_back(to_string(i));
+        }
         chart.push_back(cur.name);
+        cout << cur.name << '\n';
     }
 }
 
@@ -108,9 +112,7 @@ int main(){
     int q;
     vector<Process> p = readFile("Input.txt", q);
     
-    cout << q << '\n';
-    
-    FCFS(p);
+    SRTN(p);
 
     return 0;
 }
