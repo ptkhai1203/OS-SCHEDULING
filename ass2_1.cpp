@@ -138,7 +138,7 @@ void PreemptivePriority(vector<Process> p) {
 	vector<int> arrivalTime;
 	vector<int> cpuBurst;
 	vector<int> priority;
-	for (int i = 0; i < p.size(); i++) {
+	for (int i = 0; i < (int)p.size(); i++) {
 		processName.push_back(p[i].name);
 		arrivalTime.push_back(p[i].arrivalTime);
 		cpuBurst.push_back(p[i].burst);
@@ -182,7 +182,7 @@ void PreemptivePriority(vector<Process> p) {
 	}
 	double AVG_WT = 0;
 	double AVG_TT = 0;
-	for (int i = 0; i < p.size(); i++) {
+	for (int i = 0; i < (int)p.size(); i++) {
 		AVG_WT += WT[i];
 		AVG_TT += TT[i];
 	}
@@ -193,7 +193,7 @@ void PreemptivePriority(vector<Process> p) {
 	out.open("PS_Preemptive Version.txt", ios::out);
 	out << "Scheduling chart: " << endl;
 	out << "\t" << chart << endl;
-	for (int i = 0; i < p.size(); i++) {
+	for (int i = 0; i < (int)p.size(); i++) {
 		out << processName[i] << ":\t" << "TT = " << TT[i] << " WT = " << WT[i] << endl;
 	}
 	out << "Average:	TT = " << AVG_TT << " WT = " << AVG_WT;
@@ -206,7 +206,7 @@ void RR(vector<Process> p, int quantum){
 	vector<string> processName;
 	vector<int> arrivalTime;
 	vector<int> cpuBurst;
-	for (int i = 0; i < p.size(); i++) {
+	for (int i = 0; i < (int)p.size(); i++) {
 		processName.push_back(p[i].name);
 		arrivalTime.push_back(p[i].arrivalTime);
 		cpuBurst.push_back(p[i].burst);
@@ -256,7 +256,7 @@ void RR(vector<Process> p, int quantum){
 	}
 	double AVG_WT = 0;
 	double AVG_TT = 0;
-	for (int i = 0; i < p.size(); i++) {
+	for (int i = 0; i < (int)p.size(); i++) {
 		AVG_WT += WT[i];
 		AVG_TT += TT[i];
 	}
@@ -267,7 +267,7 @@ void RR(vector<Process> p, int quantum){
 	out.open("RR.txt", ios::out);
 	out << "Scheduling chart: " << endl;
 	out << "\t" << chart << endl;
-	for (int i = 0; i < p.size(); i++) {
+	for (int i = 0; i < (int)p.size(); i++) {
 		out << processName[i] << ":\t" << "TT = " << TT[i] << " WT = " << WT[i] << endl;
 	}
 	out << "Average:	TT = " << AVG_TT << " WT = " << AVG_WT;
@@ -284,6 +284,8 @@ int main(){
 
     int q;
     vector<Process> p = readFile("Input.txt", q);
+    RR(p,q);
+    PreemptivePriority(p);
     
     for(int i = 0; i < 4; ++i)
         schedule_methods[i](p);
