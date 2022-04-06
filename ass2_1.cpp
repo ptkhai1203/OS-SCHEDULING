@@ -59,9 +59,10 @@ void FCFS(vector<Process> p){
     for(auto m : t){
         totalTT += m.second.first;
         totalWT += m.second.second;
-        cout << m.first << ":\t TT = " << m.second.first << ' ' << "WT = " << m.second.second << '\n';
+        cout << m.first << ": \t TT = " << m.second.first << ' ' << "WT = " << m.second.second << '\n';
     }
     cout << "Average:\t TT = " << 1.0 * totalTT / p.size() << "\tWT = " << 1.0 * totalWT / p.size();
+	fclose(stdout);
 }
 
 void SRTN(vector<Process> p){
@@ -119,6 +120,7 @@ void SRTN(vector<Process> p){
         cout << m.first << ": \t TT = "  << m.second << " WT = " << WT[m.first] << '\n';
     }
     cout << "Average: \t TT = " << 1.0 * totalTT / pp.size() << "\t WT = " << 1.0 * totalWT / pp.size();
+	fclose(stdout);
 }
 
 void SJF(vector<Process> p) {
