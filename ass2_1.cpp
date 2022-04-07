@@ -76,7 +76,7 @@ void SRTN(vector<Process> p){
     p.pop_back();
     int time = 0;
     chart.push_back(to_string(time));
-    while(!pq.empty() || p.size() != 0){
+    while(!pq.empty() || p.size() != 0 || cur.burst > 0){
         if(!pq.empty()){
             if(pq.top().burst < cur.burst){
                 if(cur.burst > 0)
@@ -93,17 +93,16 @@ void SRTN(vector<Process> p){
             TT[cur.name] = time - cur.arrivalTime;
             chart.push_back(cur.name);
             chart.push_back(to_string(time));
-            cur = pq.top();
-            pq.pop(); 
+            if(!pq.empty()){
+                cur = pq.top();
+                pq.pop();
+            }
         } 
         if(time == p.back().arrivalTime){
             pq.push(p.back());
             p.pop_back();
         }
     } 
-    chart.push_back(cur.name);
-    chart.push_back(to_string(time + cur.burst)); 
-    TT[cur.name] = time + cur.burst - cur.arrivalTime;
     int totalTT = 0;
     int totalWT = 0;
     for(auto _p : pp){
