@@ -372,10 +372,9 @@ schedule_ptr schedule_methods[] = {
 int main() {
     int q;
     vector<Process> p = readFile("Input.txt", q);
-    //PreemptivePriority(p);
+	PreemptivePriority(p);
 	//SRTN(p);
 	//NonpreemptivePriority(p);
-	SJF(p);
 
     /*for(int i = 0; i < 5; ++i)
         schedule_methods[i](p);*/
