@@ -178,7 +178,7 @@ void PreemptivePriority(vector<Process> p) {
 		processName.push_back(p[i].name);
 		arrivalTime.push_back(p[i].arrivalTime);
 		cpuBurst.push_back(p[i].burst);
-		priority.push_back(p[i].priority);
+		priority.push_back(p[i].priority * -1);
 	}
 	vector<int> oldBurst = cpuBurst;
 	vector<int> oldArrival = arrivalTime;
