@@ -373,7 +373,7 @@ schedule_ptr schedule_methods[] = {
 
 int main(){
 
-    int q;
+    double q;
     vector<Process> p = readFile("Input.txt", q);
     RR(p,q);
     PreemptivePriority(p);
