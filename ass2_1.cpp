@@ -356,7 +356,7 @@ void NonpreemptivePriority(vector<Process> p) {
     map<string, int> TT, WT;
     out << "Scheduling chart: 0";
     while (p.size() || temp.size()) {
-		sort(temp.begin(), temp.end(), [](const Process& a, const Process& b){ return a.priority < b.priority; });
+		sort(temp.begin(), temp.end(), [](const Process& a, const Process& b){ return a.priority > b.priority; });
         totalTime += temp[0].burst;
         TT.insert({temp[0].name, totalTime});
         WT.insert({temp[0].name, totalTime - temp[0].burst - temp[0].arrivalTime});
