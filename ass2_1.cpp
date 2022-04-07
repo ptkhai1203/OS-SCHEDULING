@@ -5,26 +5,27 @@
 #include <map>
 #include <vector>
 #include <sstream>
+
 using namespace std;
 
-class Process {
+class Process{
 public:
     string name;
-    double arrivalTime;
-    double burst;
+    int arrivalTime;
+    int burst;
     int priority;
 
 public:
-    Process(): name(""), arrivalTime(0), burst(0), priority(0) {}
-	bool operator()(Process const& a, Process const& b) {
+    Process() : name(""), arrivalTime(0), burst(0), priority(0) {}
+	bool operator()(Process const& a, Process const& b){
 		return a.burst > b.burst;
 	}
 };
 
-vector<Process> readFile(string filename, double& quantum){
+vector<Process> readFile(string filename, int& quanTum){
     ifstream fi(filename);
     int nProcess;
-    fi >> nProcess >> quantum;
+    fi >> nProcess >> quanTum;
     vector<Process> p(nProcess);
     for(int i = 0; i < nProcess; ++i){
         fi >> p[i].name;
@@ -36,8 +37,8 @@ vector<Process> readFile(string filename, double& quantum){
 void FCFS(vector<Process> p){
     vector<string> chart; 
     sort(p.begin(), p.end(), [&](const Process& a, const Process& b){return a.arrivalTime < b.arrivalTime;});
-    map<string, pair<double, double>> t;
-    double time = 0;
+    map<string, pair<int, int>> t;
+    int time = 0;
    
     for(int i = 0; i < p.size(); ++i){
         chart.push_back(to_string(time));
@@ -53,14 +54,14 @@ void FCFS(vector<Process> p){
     for(int i = 1; i < chart.size(); ++i)
         cout << "~" << chart[i];
     cout << '\n';
-    double totalTT = 0;
-    double totalWT = 0;
+    int totalTT = 0;
+    int totalWT = 0;
     for(auto m : t){
         totalTT += m.second.first;
         totalWT += m.second.second;
         cout << m.first << ": \t TT = " << m.second.first << ' ' << "WT = " << m.second.second << '\n';
     }
-    cout << "Average:\t TT = " << totalTT / p.size() << "\tWT = " << totalWT / p.size();
+    cout << "Average:\t TT = " << 1.0 * totalTT / p.size() << "\tWT = " << 1.0 * totalWT / p.size();
 	fclose(stdout);
 }
 
@@ -69,11 +70,11 @@ void SRTN(vector<Process> p){
     priority_queue<Process, vector<Process>, Process> pq;
     sort(p.begin(), p.end(), [&](const Process& a, const Process& b){return a.arrivalTime > b.arrivalTime;});
     vector<string> chart;
-    map<string, double> TT;
-    map<string, double> WT;
+    map<string, int> TT;
+    map<string, int> WT;
     Process cur = p.back();
     p.pop_back();
-    double time = 0;
+    int time = 0;
     chart.push_back(to_string(time));
     while(!pq.empty() || p.size() != 0 || cur.burst > 0){
         if(!pq.empty()){
@@ -102,8 +103,8 @@ void SRTN(vector<Process> p){
             p.pop_back();
         }
     } 
-    double totalTT = 0;
-    double totalWT = 0;
+    int totalTT = 0;
+    int totalWT = 0;
     for(auto _p : pp){
         WT[_p.name] = TT[_p.name] - _p.burst;
         totalTT += TT[_p.name];
@@ -117,19 +118,18 @@ void SRTN(vector<Process> p){
     for(auto m : TT){
         cout << m.first << ": \t TT = "  << m.second << " WT = " << WT[m.first] << '\n';
     }
-    cout << "Average: \t TT = " << totalTT / pp.size() << "\t WT = " << totalWT / pp.size();
+    cout << "Average: \t TT = " << 1.0 * totalTT / pp.size() << "\t WT = " << 1.0 * totalWT / pp.size();
 	fclose(stdout);
 }
 
 void SJF(vector<Process> p) {
     ofstream out("SJF.txt");
-    double totalTime = 0, totalTT = 0, totalWT = 0;
-	int count = p.size();
+    int totalTime = 0, totalTT = 0, totalWT = 0, count = p.size();
     sort(p.begin(), p.end(), [](const Process& a, const Process& b){ return a.arrivalTime < b.arrivalTime; });
     vector<Process> temp;
     temp.push_back(p[0]);
     p.erase(p.begin());
-    map<string, double> TT, WT;
+    map<string, int> TT, WT;
     out << "Scheduling chart: 0";
     while (p.size() || temp.size()) {
         totalTime += temp[0].burst;
@@ -152,15 +152,15 @@ void SJF(vector<Process> p) {
         totalWT += WT[x.first];
         out << x.first << ":\t\tTT = " << x.second << "\tWT = " << WT[x.first] << endl; 
     }
-    out << "Average:\t\t\tTT = " << totalTT / count << "\t\tWT = " << totalWT / count;
+    out << "Average:\t\t\tTT = " << 1.0 * totalTT / count << "\t\tWT = " << 1.0 * totalWT / count;
     out.close();
 }
 
 void PreemptivePriority(vector<Process> p) {
 	priority_queue<int> process;
 	vector<string> processName;
-	vector<double> arrivalTime;
-	vector<double> cpuBurst;
+	vector<int> arrivalTime;
+	vector<int> cpuBurst;
 	vector<int> priority;
 	for (int i = 0; i < (int)p.size(); i++) {
 		processName.push_back(p[i].name);
@@ -168,14 +168,14 @@ void PreemptivePriority(vector<Process> p) {
 		cpuBurst.push_back(p[i].burst);
 		priority.push_back(p[i].priority * -1);
 	}
-	vector<double> oldBurst = cpuBurst;
-	vector<double> oldArrival = arrivalTime;
-	double currentTime = 0;
-	double* WT = new double[p.size()]();
-	double* TT = new double[p.size()]();
+	vector<int> oldBurst = cpuBurst;
+	vector<int> oldArrival = arrivalTime;
+	int currentTime = 0;
+	int* WT = new int[p.size()]();
+	int* TT = new int[p.size()]();
 	string oldProcess = "";
 	stringstream ss;
-	double sumTime = 0;
+	int sumTime = 0;
 	for (int i = 0; i < (int)p.size(); i++) {
 		sumTime += cpuBurst[i];
 	}
@@ -242,20 +242,20 @@ void RR(vector<Process> p, int quantum){
 	stringstream ss;
 	queue<string> process;
 	vector<string> processName;
-	vector<double> arrivalTime;
-	vector<double> cpuBurst;
+	vector<int> arrivalTime;
+	vector<int> cpuBurst;
 	for (int i = 0; i < (int)p.size(); i++) {
 		processName.push_back(p[i].name);
 		arrivalTime.push_back(p[i].arrivalTime);
 		cpuBurst.push_back(p[i].burst);
 	}
-	vector<double> oldBurst = cpuBurst;
-	vector<double> oldArrival = arrivalTime;
+	vector<int> oldBurst = cpuBurst;
+	vector<int> oldArrival = arrivalTime;
 	int currentTime = 0;
-	double* WT = new double[p.size()]();
-	double* TT = new double[p.size()]();
+	int* WT = new int[p.size()]();
+	int* TT = new int[p.size()]();
 	string oldProcess = "";
-	double sumTime = 0;
+	int sumTime = 0;
 	for (int i = 0; i < (int)p.size(); i++) {
 		sumTime += cpuBurst[i];
 	}
@@ -332,13 +332,12 @@ void RR(vector<Process> p, int quantum){
 
 void NonpreemptivePriority(vector<Process> p) {
     ofstream out("Priority (Nonpreemptive).txt");
-    double totalTime = 0, totalTT = 0, totalWT = 0;
-	int count = p.size();
+    int totalTime = 0, totalTT = 0, totalWT = 0, count = p.size();
     sort(p.begin(), p.end(), [](const Process& a, const Process& b){ return a.arrivalTime < b.arrivalTime; });
     vector<Process> temp;
     temp.push_back(p[0]);
     p.erase(p.begin());
-    map<string, double> TT, WT;
+    map<string, int> TT, WT;
     out << "Scheduling chart: 0";
     while (p.size() || temp.size()) {
         totalTime += temp[0].burst;
@@ -361,7 +360,7 @@ void NonpreemptivePriority(vector<Process> p) {
         totalWT += WT[x.first];
         out << x.first << ":\t\tTT = " << x.second << "\tWT = " << WT[x.first] << endl; 
     }
-    out << "Average:\t\t\tTT = " << totalTT / count << "\t\tWT = " << totalWT / count;
+    out << "Average:\t\t\tTT = " << 1.0 * totalTT / count << "\t\tWT = " << 1.0 * totalWT / count;
     out.close();
 }
 
@@ -373,7 +372,7 @@ schedule_ptr schedule_methods[] = {
 
 int main(){
 
-    double q;
+    int q;
     vector<Process> p = readFile("Input.txt", q);
     RR(p,q);
     PreemptivePriority(p);
