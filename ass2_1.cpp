@@ -28,12 +28,7 @@ vector<Process> readFile(string filename, int& quanTum){
     fi >> nProcess >> quanTum;
     vector<Process> p(nProcess);
     for(int i = 0; i < nProcess; ++i){
-<<<<<<< HEAD
-        fi >> p[i].name;
-        fi >> p[i].arrivalTime >> p[i].burst >> p[i].priority;
-=======
         fi >> p[i].name >> p[i].arrivalTime >> p[i].burst >> p[i].priority;
->>>>>>> b4f43a2813085c4d044f0d3afe5ff81220b51209
     }
     return p;
 }
@@ -77,12 +72,24 @@ void SRTN(vector<Process> p){
     map<string, int> TT;
     map<string, int> WT;
     Process cur = p.back();
-    p.pop_back();
+	p.pop_back();
+	while(p.back().arrivalTime == 0){
+		pq.push(p.back());
+		p.pop_back();
+	}
     int time = 0;
     chart.push_back(to_string(time));
     while(!pq.empty() || p.size() != 0){
+		while(p.size() != 0 && time == p.back().arrivalTime){
+            pq.push(p.back());
+            p.pop_back();
+        }
         if(!pq.empty()){
-            if(pq.top().burst < cur.burst){
+			if(cur.burst == 0){
+				cur = pq.top();
+				pq.pop();
+			}
+            else if(pq.top().burst < cur.burst){
                 if(cur.burst > 0)
                     pq.push(cur);
                 chart.push_back(cur.name);
@@ -92,21 +99,12 @@ void SRTN(vector<Process> p){
             }
         }
         cur.burst--;
+		time++;
         if(cur.burst == 0){
             TT[cur.name] = time - cur.arrivalTime;
             chart.push_back(cur.name);
             chart.push_back(to_string(time));
-            if(!pq.empty()){
-                cur = pq.top();
-                pq.pop();
-            }
-        } 
-		++time;
-        while(time - 1 == p.back().arrivalTime && p.size() != 0){
-            pq.push(p.back());
-            p.pop_back();
         }
-		
     } 
 	TT[cur.name] = time + cur.burst - cur.arrivalTime;
 	chart.push_back(cur.name);
@@ -382,12 +380,12 @@ int main() {
     int q;
     vector<Process> p = readFile("Input.txt", q);
     //PreemptivePriority(p);
-	//SRTN(p);
+	// SRTN(p);
 	//NonpreemptivePriority(p);
-	SJF(p);
-
-    /*for(int i = 0; i < 5; ++i)
-        schedule_methods[i](p);*/
+	// SJF(p);
+	RR(p, q);
+    for(int i = 0; i < 5; ++i)
+        schedule_methods[i](p);
 	
     return 0;
 }
