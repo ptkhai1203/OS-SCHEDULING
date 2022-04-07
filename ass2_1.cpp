@@ -5,7 +5,7 @@
 #include <map>
 #include <vector>
 #include <sstream>
-
+#include <climits>
 using namespace std;
 
 class Process{
@@ -29,7 +29,7 @@ vector<Process> readFile(string filename, int& quanTum){
     vector<Process> p(nProcess);
     for(int i = 0; i < nProcess; ++i){
         fi >> p[i].name;
-        fi >> p[(p[i].name[p[i].name.length() - 1] - '0') - 1].arrivalTime >> p[(p[i].name[p[i].name.length() - 1] - '0') - 1].burst >> p[(p[i].name[p[i].name.length() - 1] - '0') - 1].priority;
+        fi >> p[i].arrivalTime >> p[i].burst >> p[i].priority;
     }
     return p;
 }
@@ -76,7 +76,7 @@ void SRTN(vector<Process> p){
     p.pop_back();
     int time = 0;
     chart.push_back(to_string(time));
-    while(!pq.empty() || p.size() != 0 || cur.burst > 0){
+    while(!pq.empty() || p.size() != 0){
         if(!pq.empty()){
             if(pq.top().burst < cur.burst){
                 if(cur.burst > 0)
@@ -88,7 +88,6 @@ void SRTN(vector<Process> p){
             }
         }
         cur.burst--;
-        ++time;
         if(cur.burst == 0){
             TT[cur.name] = time - cur.arrivalTime;
             chart.push_back(cur.name);
@@ -98,11 +97,16 @@ void SRTN(vector<Process> p){
                 pq.pop();
             }
         } 
-        if(time == p.back().arrivalTime){
+		++time;
+        while(time - 1 == p.back().arrivalTime && p.size() != 0){
             pq.push(p.back());
             p.pop_back();
         }
+		
     } 
+	TT[cur.name] = time + cur.burst - cur.arrivalTime;
+	chart.push_back(cur.name);
+	chart.push_back(to_string(time + cur.burst));
     int totalTT = 0;
     int totalWT = 0;
     for(auto _p : pp){
