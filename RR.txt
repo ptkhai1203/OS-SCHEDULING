@@ -1,8 +1,6 @@
 Scheduling chart: 
-	0 ~ P1 ~ 2 ~ P2 ~ 3 ~ P1 ~ 5 ~ P4 ~ 6 ~ P1 ~ 
-P1:	TT = 12 WT = 2
-P2:	TT = 2 WT = 1
-P3:	TT = 0 WT = 0
-P4:	TT = 3 WT = 2
-P5:	TT = 0 WT = 0
-Average:	TT = 3.4 WT = 1
+	0 ~ P1 ~ 4 ~ P2 ~ 7 ~ P1 ~ 15 ~ P3 ~ 18 ~ P1 ~ 30
+P1:	TT = 30 WT = 6
+P2:	TT = 3 WT = 0
+P3:	TT = 6 WT = 3
+Average:	TT = 13 WT = 3
