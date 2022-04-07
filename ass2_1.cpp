@@ -123,14 +123,37 @@ void SRTN(vector<Process> p){
 }
 
 void SJF(vector<Process> p) {
-    int totalTime = 0;
-    sort(p.begin(), p.end(), [](const Process& a, const Process& b){ return a.burst < b.burst; });
-    vector<int> TT(p.size()), WT(p.size());
-    cout << "Scheduling chart: 0";
-    for (int i = 0; i < p.size(); i++) {
-        
+    ofstream out("SJF.txt");
+    int totalTime = 0, totalTT = 0, totalWT = 0, count = p.size();
+    sort(p.begin(), p.end(), [](const Process& a, const Process& b){ return a.arrivalTime < b.arrivalTime; });
+    vector<Process> temp;
+    temp.push_back(p[0]);
+    p.erase(p.begin());
+    map<string, int> TT, WT;
+    out << "Scheduling chart: 0";
+    while (p.size() || temp.size()) {
+        totalTime += temp[0].burst;
+        TT.insert({temp[0].name, totalTime});
+        WT.insert({temp[0].name, totalTime - temp[0].burst});
+        out << " ~" << temp[0].name << "~ " << totalTime;
+        temp.erase(temp.begin());
+        for (int i = 0; i < p.size(); i++) {
+            if (totalTime >= p[i].arrivalTime) {
+                temp.push_back(p[i]);
+                p.erase(p.begin() + i);
+                i--;
+            }
+        }
+        sort(temp.begin(), temp.end(), [](const Process& a, const Process& b){ return a.burst < b.burst; });
     }
-    // 0 ~P1~ 4 ~P2~ 8 ~P3~ 11 ~P1~ 15 ~P2~ 16 ~P1~ 32
+    out << endl;
+    for (auto x : TT) {
+        totalTT += x.second;
+        totalWT += WT[x.first];
+        out << x.first << ":\t\tTT = " << x.second << "\tWT = " << WT[x.first] << endl; 
+    }
+    out << "Average:\t\t\tTT = " << 1.0 * totalTT / count << "\t\tWT = " << 1.0 * totalWT / count;
+    out.close();
 }
 
 void PreemptivePriority(vector<Process> p) {
@@ -146,17 +169,31 @@ void PreemptivePriority(vector<Process> p) {
 		priority.push_back(p[i].priority * -1);
 	}
 	vector<int> oldBurst = cpuBurst;
+	vector<int> oldArrival = arrivalTime;
 	int currentTime = 0;
 	int* WT = new int[p.size()]();
 	int* TT = new int[p.size()]();
 	string oldProcess = "";
 	stringstream ss;
-	while (true) {
+	int sumTime = 0;
+	for (int i = 0; i < (int)p.size(); i++) {
+		sumTime += cpuBurst[i];
+	}
+	while (currentTime <= sumTime) {
 		int indexProcess = -1;
-		auto push = find(arrivalTime.begin(), arrivalTime.end(), currentTime);
-		if (push != arrivalTime.end()) {
-			int temp = distance(arrivalTime.begin(), push);
-			process.push(priority[temp]);
+		while (true) {
+			auto push = find(arrivalTime.begin(), arrivalTime.end(), currentTime);
+			if (push != arrivalTime.end()) {
+				int temp = distance(arrivalTime.begin(), push);
+				arrivalTime[temp] = -1;
+				process.push(priority[temp]);
+			}
+			else
+				break;
+		}
+		if (process.size() == 0) {
+			currentTime++;
+			continue;
 		}
 		int ProcessInProcess = process.top();
 		process.pop();
@@ -171,15 +208,15 @@ void PreemptivePriority(vector<Process> p) {
 		currentTime += 1;
 		cpuBurst[indexProcess] -= 1;
 		if (cpuBurst[indexProcess] == 0) {
-			TT[indexProcess] = currentTime - arrivalTime[indexProcess];
+			priority[indexProcess] = INT_MAX;
+			TT[indexProcess] = currentTime - oldArrival[indexProcess];
 			WT[indexProcess] = TT[indexProcess] - oldBurst[indexProcess];
 		}
-		else
+		else {
 			process.push(priority[indexProcess]);
-		if (count(cpuBurst.begin(), cpuBurst.end(), 0) == cpuBurst.size()) {
-			ss << currentTime;
-			break;
 		}
+		if (currentTime == sumTime)
+			ss << currentTime;
 	}
 	double AVG_WT = 0;
 	double AVG_TT = 0;
@@ -191,7 +228,7 @@ void PreemptivePriority(vector<Process> p) {
 	AVG_TT /= p.size();
 	string chart = ss.str();
 	ofstream out;
-	out.open("PS_Preemptive Version.txt", ios::out);
+	out.open("Priority (Preemptive).txt", ios::out);
 	out << "Scheduling chart: " << endl;
 	out << "\t" << chart << endl;
 	for (int i = 0; i < (int)p.size(); i++) {
@@ -202,7 +239,7 @@ void PreemptivePriority(vector<Process> p) {
 }
 
 void RR(vector<Process> p, int quantum){
-    stringstream ss;
+	stringstream ss;
 	queue<string> process;
 	vector<string> processName;
 	vector<int> arrivalTime;
@@ -213,47 +250,65 @@ void RR(vector<Process> p, int quantum){
 		cpuBurst.push_back(p[i].burst);
 	}
 	vector<int> oldBurst = cpuBurst;
+	vector<int> oldArrival = arrivalTime;
 	int currentTime = 0;
 	int* WT = new int[p.size()]();
 	int* TT = new int[p.size()]();
 	string oldProcess = "";
-	auto start = find(arrivalTime.begin(), arrivalTime.end(), 0);
-	int temp = distance(arrivalTime.begin(), start);
-	process.push(processName[distance(arrivalTime.begin(), start)]);
+	int sumTime = 0;
+	for (int i = 0; i < (int)p.size(); i++) {
+		sumTime += cpuBurst[i];
+	}
 	while (true) {
+		auto start = find(arrivalTime.begin(), arrivalTime.end(), 0);
+		if (start == arrivalTime.end())
+			break;
+		arrivalTime[distance(arrivalTime.begin(), start)] = -1;
+		process.push(processName[distance(arrivalTime.begin(), start)]);
+	}
+	while (currentTime <= sumTime) {
 		int indexProcess = -1;
 		for (int i = currentTime + 1; i <= currentTime + quantum; i++) {
-			auto it = find(arrivalTime.begin(), arrivalTime.end(), i);
-			if (it != arrivalTime.end()) {
-				int temp = distance(arrivalTime.begin(), it);
-				process.push(processName[temp]);
+			bool flag = true;
+			while (flag) {
+				auto it = find(arrivalTime.begin(), arrivalTime.end(), i);
+				if (it != arrivalTime.end()) {
+					int temp = distance(arrivalTime.begin(), it);
+					arrivalTime[temp] = -1;
+					process.push(processName[temp]);
+				}
+				else
+					flag = false;
 			}
 		}
-	string ProcessInProcess = process.front();
-	process.pop();
-	auto it = find(processName.begin(), processName.end(), ProcessInProcess);
-	if (it != processName.end())
-		indexProcess = distance(processName.begin(), it);
-	if (oldProcess != ProcessInProcess) {
-		ss << currentTime << " ~ " << ProcessInProcess << " ~ ";
-		oldProcess = ProcessInProcess;
-	}
-	if (cpuBurst[indexProcess] > quantum) {
-		currentTime += quantum;
-		cpuBurst[indexProcess] -= quantum;
-	}
-	else {
-		currentTime += cpuBurst[indexProcess];
-		cpuBurst[indexProcess] = 0;
-		TT[indexProcess] = currentTime - arrivalTime[indexProcess];
-		WT[indexProcess] = TT[indexProcess] - oldBurst[indexProcess];
-	}
-	if (cpuBurst[indexProcess] > 0) 
+		if (process.size() == 0) {
+			currentTime++;
+			continue;
+		}
+		string ProcessInProcess = process.front();
+		process.pop();
+		auto it = find(processName.begin(), processName.end(), ProcessInProcess);
+		if (it != processName.end())
+			indexProcess = distance(processName.begin(), it);
+		if (oldProcess != ProcessInProcess) {
+			ss << currentTime << " ~ " << ProcessInProcess << " ~ ";
+			oldProcess = ProcessInProcess;
+		}
+		if (cpuBurst[indexProcess] > quantum) {
+			currentTime += quantum;
+			cpuBurst[indexProcess] -= quantum;
+		}
+		else {
+			currentTime += cpuBurst[indexProcess];
+			cpuBurst[indexProcess] = 0;
+			TT[indexProcess] = currentTime - oldArrival[indexProcess];
+			WT[indexProcess] = TT[indexProcess] - oldBurst[indexProcess];
+		}
+		if (cpuBurst[indexProcess] > 0) {
 			process.push(ProcessInProcess);
-	if (count(cpuBurst.begin(), cpuBurst.end(), 0) == cpuBurst.size()) {
+		}
+		if (currentTime == sumTime)
 			ss << currentTime;
-			break;
-	    }
 	}
 	double AVG_WT = 0;
 	double AVG_TT = 0;
@@ -275,10 +330,44 @@ void RR(vector<Process> p, int quantum){
 	out.close();
 }
 
+void NonpreemptivePriority(vector<Process> p) {
+    ofstream out("Priority (Nonpreemptive).txt");
+    int totalTime = 0, totalTT = 0, totalWT = 0, count = p.size();
+    sort(p.begin(), p.end(), [](const Process& a, const Process& b){ return a.arrivalTime < b.arrivalTime; });
+    vector<Process> temp;
+    temp.push_back(p[0]);
+    p.erase(p.begin());
+    map<string, int> TT, WT;
+    out << "Scheduling chart: 0";
+    while (p.size() || temp.size()) {
+        totalTime += temp[0].burst;
+        TT.insert({temp[0].name, totalTime});
+        WT.insert({temp[0].name, totalTime - temp[0].burst});
+        out << " ~" << temp[0].name << "~ " << totalTime;
+        temp.erase(temp.begin());
+        for (int i = 0; i < p.size(); i++) {
+            if (totalTime >= p[i].arrivalTime) {
+                temp.push_back(p[i]);
+                p.erase(p.begin() + i);
+                i--;
+            }
+        }
+        sort(temp.begin(), temp.end(), [](const Process& a, const Process& b){ return a.priority < b.priority; });
+    }
+    out << endl;
+    for (auto x : TT) {
+        totalTT += x.second;
+        totalWT += WT[x.first];
+        out << x.first << ":\t\tTT = " << x.second << "\tWT = " << WT[x.first] << endl; 
+    }
+    out << "Average:\t\t\tTT = " << 1.0 * totalTT / count << "\t\tWT = " << 1.0 * totalWT / count;
+    out.close();
+}
+
 typedef void (*schedule_ptr)(vector<Process>);
 
 schedule_ptr schedule_methods[] = {
-    FCFS, SRTN, SJF, PreemptivePriority
+    FCFS, SRTN, SJF, PreemptivePriority, NonpreemptivePriority
 };
 
 int main(){
@@ -288,7 +377,7 @@ int main(){
     RR(p,q);
     PreemptivePriority(p);
     
-    for(int i = 0; i < 4; ++i)
+    for(int i = 0; i < 5; ++i)
         schedule_methods[i](p);
 
     return 0;
