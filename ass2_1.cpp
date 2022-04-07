@@ -169,17 +169,31 @@ void PreemptivePriority(vector<Process> p) {
 		priority.push_back(p[i].priority * -1);
 	}
 	vector<int> oldBurst = cpuBurst;
+	vector<int> oldArrival = arrivalTime;
 	int currentTime = 0;
 	int* WT = new int[p.size()]();
 	int* TT = new int[p.size()]();
 	string oldProcess = "";
 	stringstream ss;
-	while (true) {
+	int sumTime = 0;
+	for (int i = 0; i < (int)p.size(); i++) {
+		sumTime += cpuBurst[i];
+	}
+	while (currentTime <= sumTime) {
 		int indexProcess = -1;
-		auto push = find(arrivalTime.begin(), arrivalTime.end(), currentTime);
-		if (push != arrivalTime.end()) {
-			int temp = distance(arrivalTime.begin(), push);
-			process.push(priority[temp]);
+		while (true) {
+			auto push = find(arrivalTime.begin(), arrivalTime.end(), currentTime);
+			if (push != arrivalTime.end()) {
+				int temp = distance(arrivalTime.begin(), push);
+				arrivalTime[temp] = -1;
+				process.push(priority[temp]);
+			}
+			else
+				break;
+		}
+		if (process.size() == 0) {
+			currentTime++;
+			continue;
 		}
 		int ProcessInProcess = process.top();
 		process.pop();
@@ -194,15 +208,15 @@ void PreemptivePriority(vector<Process> p) {
 		currentTime += 1;
 		cpuBurst[indexProcess] -= 1;
 		if (cpuBurst[indexProcess] == 0) {
-			TT[indexProcess] = currentTime - arrivalTime[indexProcess];
+			priority[indexProcess] = INT_MAX;
+			TT[indexProcess] = currentTime - oldArrival[indexProcess];
 			WT[indexProcess] = TT[indexProcess] - oldBurst[indexProcess];
 		}
-		else
+		else {
 			process.push(priority[indexProcess]);
-		if (count(cpuBurst.begin(), cpuBurst.end(), 0) == cpuBurst.size()) {
-			ss << currentTime;
-			break;
 		}
+		if (currentTime == sumTime)
+			ss << currentTime;
 	}
 	double AVG_WT = 0;
 	double AVG_TT = 0;
@@ -225,7 +239,7 @@ void PreemptivePriority(vector<Process> p) {
 }
 
 void RR(vector<Process> p, int quantum){
-    stringstream ss;
+	stringstream ss;
 	queue<string> process;
 	vector<string> processName;
 	vector<int> arrivalTime;
@@ -236,47 +250,65 @@ void RR(vector<Process> p, int quantum){
 		cpuBurst.push_back(p[i].burst);
 	}
 	vector<int> oldBurst = cpuBurst;
+	vector<int> oldArrival = arrivalTime;
 	int currentTime = 0;
 	int* WT = new int[p.size()]();
 	int* TT = new int[p.size()]();
 	string oldProcess = "";
-	auto start = find(arrivalTime.begin(), arrivalTime.end(), 0);
-	int temp = distance(arrivalTime.begin(), start);
-	process.push(processName[distance(arrivalTime.begin(), start)]);
+	int sumTime = 0;
+	for (int i = 0; i < (int)p.size(); i++) {
+		sumTime += cpuBurst[i];
+	}
 	while (true) {
+		auto start = find(arrivalTime.begin(), arrivalTime.end(), 0);
+		if (start == arrivalTime.end())
+			break;
+		arrivalTime[distance(arrivalTime.begin(), start)] = -1;
+		process.push(processName[distance(arrivalTime.begin(), start)]);
+	}
+	while (currentTime <= sumTime) {
 		int indexProcess = -1;
 		for (int i = currentTime + 1; i <= currentTime + quantum; i++) {
-			auto it = find(arrivalTime.begin(), arrivalTime.end(), i);
-			if (it != arrivalTime.end()) {
-				int temp = distance(arrivalTime.begin(), it);
-				process.push(processName[temp]);
+			bool flag = true;
+			while (flag) {
+				auto it = find(arrivalTime.begin(), arrivalTime.end(), i);
+				if (it != arrivalTime.end()) {
+					int temp = distance(arrivalTime.begin(), it);
+					arrivalTime[temp] = -1;
+					process.push(processName[temp]);
+				}
+				else
+					flag = false;
 			}
 		}
-	string ProcessInProcess = process.front();
-	process.pop();
-	auto it = find(processName.begin(), processName.end(), ProcessInProcess);
-	if (it != processName.end())
-		indexProcess = distance(processName.begin(), it);
-	if (oldProcess != ProcessInProcess) {
-		ss << currentTime << " ~ " << ProcessInProcess << " ~ ";
-		oldProcess = ProcessInProcess;
-	}
-	if (cpuBurst[indexProcess] > quantum) {
-		currentTime += quantum;
-		cpuBurst[indexProcess] -= quantum;
-	}
-	else {
-		currentTime += cpuBurst[indexProcess];
-		cpuBurst[indexProcess] = 0;
-		TT[indexProcess] = currentTime - arrivalTime[indexProcess];
-		WT[indexProcess] = TT[indexProcess] - oldBurst[indexProcess];
-	}
-	if (cpuBurst[indexProcess] > 0) 
+		if (process.size() == 0) {
+			currentTime++;
+			continue;
+		}
+		string ProcessInProcess = process.front();
+		process.pop();
+		auto it = find(processName.begin(), processName.end(), ProcessInProcess);
+		if (it != processName.end())
+			indexProcess = distance(processName.begin(), it);
+		if (oldProcess != ProcessInProcess) {
+			ss << currentTime << " ~ " << ProcessInProcess << " ~ ";
+			oldProcess = ProcessInProcess;
+		}
+		if (cpuBurst[indexProcess] > quantum) {
+			currentTime += quantum;
+			cpuBurst[indexProcess] -= quantum;
+		}
+		else {
+			currentTime += cpuBurst[indexProcess];
+			cpuBurst[indexProcess] = 0;
+			TT[indexProcess] = currentTime - oldArrival[indexProcess];
+			WT[indexProcess] = TT[indexProcess] - oldBurst[indexProcess];
+		}
+		if (cpuBurst[indexProcess] > 0) {
 			process.push(ProcessInProcess);
-	if (count(cpuBurst.begin(), cpuBurst.end(), 0) == cpuBurst.size()) {
+		}
+		if (currentTime == sumTime)
 			ss << currentTime;
-			break;
-	    }
 	}
 	double AVG_WT = 0;
 	double AVG_TT = 0;
