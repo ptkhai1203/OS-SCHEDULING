@@ -228,7 +228,7 @@ void PreemptivePriority(vector<Process> p) {
 	AVG_TT /= p.size();
 	string chart = ss.str();
 	ofstream out;
-	out.open("PS_Preemptive Version.txt", ios::out);
+	out.open("Priority (Preemptive).txt", ios::out);
 	out << "Scheduling chart: " << endl;
 	out << "\t" << chart << endl;
 	for (int i = 0; i < (int)p.size(); i++) {
