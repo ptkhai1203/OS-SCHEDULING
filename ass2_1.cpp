@@ -168,7 +168,7 @@ void SJF(vector<Process> p) {
 }
 
 void PreemptivePriority(vector<Process> p) {
-	priority_queue<int> process;
+	priority_queue<pair<int, int>> process;
 	vector<string> processName;
 	vector<int> arrivalTime;
 	vector<int> cpuBurst;
@@ -197,7 +197,7 @@ void PreemptivePriority(vector<Process> p) {
 			if (push != arrivalTime.end()) {
 				int temp = distance(arrivalTime.begin(), push);
 				arrivalTime[temp] = -1;
-				process.push(priority[temp]);
+				process.push(make_pair(priority[temp],temp));
 			}
 			else
 				break;
@@ -206,11 +206,11 @@ void PreemptivePriority(vector<Process> p) {
 			currentTime++;
 			continue;
 		}
-		int ProcessInProcess = process.top();
+		pair<int, int> pairr = process.top();
+		string ProcessInProcess = processName[pairr.second];
 		process.pop();
-		auto it = find(priority.begin(), priority.end(), ProcessInProcess);
-		if (it != priority.end())
-			indexProcess = distance(priority.begin(), it);
+		auto it = find(processName.begin(), processName.end(), ProcessInProcess);
+		indexProcess = distance(processName.begin(), it);
 		string Name = processName[indexProcess];
 		if (oldProcess != Name) {
 			ss << currentTime << " ~ " << Name << " ~ ";
@@ -224,7 +224,7 @@ void PreemptivePriority(vector<Process> p) {
 			WT[indexProcess] = TT[indexProcess] - oldBurst[indexProcess];
 		}
 		else {
-			process.push(priority[indexProcess]);
+			process.push(make_pair(priority[indexProcess],indexProcess));
 		}
 		if (currentTime == sumTime)
 			ss << currentTime;
