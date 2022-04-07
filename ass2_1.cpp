@@ -197,7 +197,7 @@ void PreemptivePriority(vector<Process> p) {
 			if (push != arrivalTime.end()) {
 				int temp = distance(arrivalTime.begin(), push);
 				arrivalTime[temp] = -1;
-				process.push(make_pair(priority[temp],-temp));
+				process.push(make_pair(priority[temp],temp));
 			}
 			else
 				break;
@@ -207,7 +207,7 @@ void PreemptivePriority(vector<Process> p) {
 			continue;
 		}
 		pair<int, int> pairr = process.top();
-		string ProcessInProcess = processName[-pairr.second];
+		string ProcessInProcess = processName[pairr.second];
 		process.pop();
 		auto it = find(processName.begin(), processName.end(), ProcessInProcess);
 		indexProcess = distance(processName.begin(), it);
@@ -224,7 +224,7 @@ void PreemptivePriority(vector<Process> p) {
 			WT[indexProcess] = TT[indexProcess] - oldBurst[indexProcess];
 		}
 		else {
-			process.push(make_pair(priority[indexProcess],-indexProcess));
+			process.push(make_pair(priority[indexProcess],indexProcess));
 		}
 		if (currentTime == sumTime)
 			ss << currentTime;
