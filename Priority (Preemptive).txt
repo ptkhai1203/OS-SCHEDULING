@@ -1,14 +1,7 @@
 Scheduling chart: 
-<<<<<<< HEAD
-	0 ~ P1 ~ 1 ~ P2 ~ 2 ~ P3 ~ 5 ~ P2 ~ 9 ~ P1 ~ 32
-P1:	TT = 32 WT = 8
-P2:	TT = 8 WT = 3
-P3:	TT = 3 WT = 0
-Average:	TT = 14.3333 WT = 3.66667
-=======
-	0 ~ P1 ~ 24 ~ P2 ~ 27 ~ P3 ~ 30
-P1:	TT = 24 WT = 0
-P2:	TT = 26 WT = 23
-P3:	TT = 28 WT = 25
-Average:	TT = 26 WT = 16
->>>>>>> c87ea5ab9d6e92292781f5da64f2947cc53cfb7a
+	0 ~ P1 ~ 6 ~ P2 ~ 13 ~ P4 ~ 18 ~ P3 ~ 24
+P1:	TT = 5 WT = -1
+P2:	TT = 12 WT = 5
+P3:	TT = 24 WT = 18
+P4:	TT = 18 WT = 13
+Average:	TT = 14.75 WT = 8.75

@@ -133,11 +133,17 @@ void SJF(vector<Process> p) {
     int totalTime = 0, totalTT = 0, totalWT = 0, count = p.size();
     sort(p.begin(), p.end(), [](const Process& a, const Process& b){ return a.arrivalTime < b.arrivalTime; });
     vector<Process> temp;
-    temp.push_back(p[0]);
-    p.erase(p.begin());
+	while (true) {
+		if (p[0].arrivalTime == 0) {
+			temp.push_back(p[0]);
+			p.erase(p.begin());
+		}
+		else break;
+	}
     map<string, int> TT, WT;
     out << "Scheduling chart: 0";
     while (p.size() || temp.size()) {
+		sort(temp.begin(), temp.end(), [](const Process& a, const Process& b){ return a.burst < b.burst; });
         totalTime += temp[0].burst;
         TT.insert({temp[0].name, totalTime - temp[0].arrivalTime});
         WT.insert({temp[0].name, totalTime - temp[0].burst - temp[0].arrivalTime});
@@ -150,7 +156,6 @@ void SJF(vector<Process> p) {
                 i--;
             }
         }
-        sort(temp.begin(), temp.end(), [](const Process& a, const Process& b){ return a.burst < b.burst; });
     }
     out << endl;
     for (auto x : TT) {
@@ -341,14 +346,20 @@ void NonpreemptivePriority(vector<Process> p) {
     int totalTime = 0, totalTT = 0, totalWT = 0, count = p.size();
     sort(p.begin(), p.end(), [](const Process& a, const Process& b){ return a.arrivalTime < b.arrivalTime; });
     vector<Process> temp;
-    temp.push_back(p[0]);
-    p.erase(p.begin());
+    while (true) {
+		if (p[0].arrivalTime == 0) {
+			temp.push_back(p[0]);
+			p.erase(p.begin());
+		}
+		else break;
+	}
     map<string, int> TT, WT;
     out << "Scheduling chart: 0";
     while (p.size() || temp.size()) {
+		sort(temp.begin(), temp.end(), [](const Process& a, const Process& b){ return a.priority < b.priority; });
         totalTime += temp[0].burst;
         TT.insert({temp[0].name, totalTime});
-        WT.insert({temp[0].name, totalTime - temp[0].burst});
+        WT.insert({temp[0].name, totalTime - temp[0].burst - temp[0].arrivalTime});
         out << " ~" << temp[0].name << "~ " << totalTime;
         temp.erase(temp.begin());
         for (int i = 0; i < p.size(); i++) {
@@ -358,7 +369,6 @@ void NonpreemptivePriority(vector<Process> p) {
                 i--;
             }
         }
-        sort(temp.begin(), temp.end(), [](const Process& a, const Process& b){ return a.priority < b.priority; });
     }
     out << endl;
     for (auto x : TT) {
