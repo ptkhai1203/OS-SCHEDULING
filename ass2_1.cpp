@@ -5,7 +5,7 @@
 #include <map>
 #include <vector>
 #include <sstream>
-
+#include <climits>
 using namespace std;
 
 class Process{
@@ -72,12 +72,24 @@ void SRTN(vector<Process> p){
     map<string, int> TT;
     map<string, int> WT;
     Process cur = p.back();
-    p.pop_back();
+	p.pop_back();
+	while(p.back().arrivalTime == 0){
+		pq.push(p.back());
+		p.pop_back();
+	}
     int time = 0;
     chart.push_back(to_string(time));
-    while(!pq.empty() || p.size() != 0 || cur.burst > 0){
+    while(!pq.empty() || p.size() != 0){
+		while(p.size() != 0 && time == p.back().arrivalTime){
+            pq.push(p.back());
+            p.pop_back();
+        }
         if(!pq.empty()){
-            if(pq.top().burst < cur.burst){
+			if(cur.burst == 0){
+				cur = pq.top();
+				pq.pop();
+			}
+            else if(pq.top().burst < cur.burst){
                 if(cur.burst > 0)
                     pq.push(cur);
                 chart.push_back(cur.name);
@@ -87,21 +99,16 @@ void SRTN(vector<Process> p){
             }
         }
         cur.burst--;
-        ++time;
+		time++;
         if(cur.burst == 0){
             TT[cur.name] = time - cur.arrivalTime;
             chart.push_back(cur.name);
             chart.push_back(to_string(time));
-            if(!pq.empty()){
-                cur = pq.top();
-                pq.pop();
-            }
-        } 
-        if(time == p.back().arrivalTime){
-            pq.push(p.back());
-            p.pop_back();
         }
     } 
+	TT[cur.name] = time + cur.burst - cur.arrivalTime;
+	chart.push_back(cur.name);
+	chart.push_back(to_string(time + cur.burst));
     int totalTT = 0;
     int totalWT = 0;
     for(auto _p : pp){
@@ -372,12 +379,10 @@ schedule_ptr schedule_methods[] = {
 int main() {
     int q;
     vector<Process> p = readFile("Input.txt", q);
-	PreemptivePriority(p);
-	//SRTN(p);
-	//NonpreemptivePriority(p);
 
-    /*for(int i = 0; i < 5; ++i)
-        schedule_methods[i](p);*/
+	RR(p, q);
+    for(int i = 0; i < 5; ++i)
+        schedule_methods[i](p);
 	
     return 0;
 }

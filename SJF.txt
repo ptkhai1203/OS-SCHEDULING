@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Scheduling chart: 0 ~P1~ 10 ~P2~ 11 ~P4~ 12 ~P3~ 14 ~P5~ 19
 P1:		TT = 10	WT = 0
 P2:		TT = 10	WT = 9
@@ -5,3 +6,10 @@ P3:		TT = 12	WT = 10
 P4:		TT = 9	WT = 8
 P5:		TT = 15	WT = 10
 Average:			TT = 11.2		WT = 7.4
+=======
+Scheduling chart: 0 ~P1~ 24 ~P2~ 27 ~P3~ 30
+P1:		TT = 24	WT = 0
+P2:		TT = 26	WT = 23
+P3:		TT = 28	WT = 25
+Average:			TT = 26		WT = 16
+>>>>>>> c87ea5ab9d6e92292781f5da64f2947cc53cfb7a
