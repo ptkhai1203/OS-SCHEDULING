@@ -1,6 +1,7 @@
 #include <iostream>
 #include <queue>
 #include <fstream>
+#include <tuple>
 #include <algorithm>
 #include <map>
 #include <vector>
@@ -168,7 +169,7 @@ void SJF(vector<Process> p) {
 }
 
 void PreemptivePriority(vector<Process> p) {
-	priority_queue<pair<int, int>> process;
+	priority_queue<tuple<int, int, string>> process;
 	vector<string> processName;
 	vector<int> arrivalTime;
 	vector<int> cpuBurst;
@@ -197,7 +198,7 @@ void PreemptivePriority(vector<Process> p) {
 			if (push != arrivalTime.end()) {
 				int temp = distance(arrivalTime.begin(), push);
 				arrivalTime[temp] = -1;
-				process.push(make_pair(priority[temp],temp));
+				process.push(make_tuple(priority[temp],INT_MAX - oldArrival[temp],processName[temp]));
 			}
 			else
 				break;
@@ -206,8 +207,8 @@ void PreemptivePriority(vector<Process> p) {
 			currentTime++;
 			continue;
 		}
-		pair<int, int> pairr = process.top();
-		string ProcessInProcess = processName[pairr.second];
+		tuple<int, int, string> tupp = process.top();
+		string ProcessInProcess = get<2>(tupp);
 		process.pop();
 		auto it = find(processName.begin(), processName.end(), ProcessInProcess);
 		indexProcess = distance(processName.begin(), it);
@@ -224,7 +225,7 @@ void PreemptivePriority(vector<Process> p) {
 			WT[indexProcess] = TT[indexProcess] - oldBurst[indexProcess];
 		}
 		else {
-			process.push(make_pair(priority[indexProcess],indexProcess));
+			process.push(make_tuple(priority[indexProcess], INT_MAX - oldArrival[indexProcess], ProcessInProcess));
 		}
 		if (currentTime == sumTime)
 			ss << currentTime;
@@ -356,9 +357,9 @@ void NonpreemptivePriority(vector<Process> p) {
     map<string, int> TT, WT;
     out << "Scheduling chart: 0";
     while (p.size() || temp.size()) {
-		sort(temp.begin(), temp.end(), [](const Process& a, const Process& b){ return a.priority > b.priority; });
+		sort(temp.begin(), temp.end(), [](const Process& a, const Process& b){ return a.priority < b.priority; });
         totalTime += temp[0].burst;
-        TT.insert({temp[0].name, totalTime});
+        TT.insert({temp[0].name, totalTime - temp[0].arrivalTime});
         WT.insert({temp[0].name, totalTime - temp[0].burst - temp[0].arrivalTime});
         out << " ~" << temp[0].name << "~ " << totalTime;
         temp.erase(temp.begin());
