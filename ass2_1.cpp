@@ -28,8 +28,12 @@ vector<Process> readFile(string filename, int& quanTum){
     fi >> nProcess >> quanTum;
     vector<Process> p(nProcess);
     for(int i = 0; i < nProcess; ++i){
+<<<<<<< HEAD
         fi >> p[i].name;
         fi >> p[i].arrivalTime >> p[i].burst >> p[i].priority;
+=======
+        fi >> p[i].name >> p[i].arrivalTime >> p[i].burst >> p[i].priority;
+>>>>>>> b4f43a2813085c4d044f0d3afe5ff81220b51209
     }
     return p;
 }
@@ -137,8 +141,8 @@ void SJF(vector<Process> p) {
     out << "Scheduling chart: 0";
     while (p.size() || temp.size()) {
         totalTime += temp[0].burst;
-        TT.insert({temp[0].name, totalTime});
-        WT.insert({temp[0].name, totalTime - temp[0].burst});
+        TT.insert({temp[0].name, totalTime - temp[0].arrivalTime});
+        WT.insert({temp[0].name, totalTime - temp[0].burst - temp[0].arrivalTime});
         out << " ~" << temp[0].name << "~ " << totalTime;
         temp.erase(temp.begin());
         for (int i = 0; i < p.size(); i++) {
@@ -374,15 +378,16 @@ schedule_ptr schedule_methods[] = {
     FCFS, SRTN, SJF, PreemptivePriority, NonpreemptivePriority
 };
 
-int main(){
-
+int main() {
     int q;
     vector<Process> p = readFile("Input.txt", q);
-    RR(p,q);
-    PreemptivePriority(p);
-    
-    for(int i = 0; i < 5; ++i)
-        schedule_methods[i](p);
+    //PreemptivePriority(p);
+	//SRTN(p);
+	//NonpreemptivePriority(p);
+	SJF(p);
 
+    /*for(int i = 0; i < 5; ++i)
+        schedule_methods[i](p);*/
+	
     return 0;
 }
