@@ -34,7 +34,7 @@ vector<Process> readFile(string filename, int& quanTum){
     return p;
 }
 
-void FCFS(vector<Process> p){
+void FCFS(vector<Process> p, int q){
     vector<string> chart; 
     sort(p.begin(), p.end(), [&](const Process& a, const Process& b){return a.arrivalTime < b.arrivalTime;});
     map<string, pair<int, int>> t;
@@ -65,7 +65,7 @@ void FCFS(vector<Process> p){
 	fclose(stdout);
 }
 
-void SRTN(vector<Process> p){
+void SRTN(vector<Process> p, int q){
     vector<Process> pp = p;
     priority_queue<Process, vector<Process>, Process> pq;
     sort(p.begin(), p.end(), [&](const Process& a, const Process& b){return a.arrivalTime > b.arrivalTime;});
@@ -129,7 +129,7 @@ void SRTN(vector<Process> p){
 	fclose(stdout);
 }
 
-void SJF(vector<Process> p) {
+void SJF(vector<Process> p, int q) {
     ofstream out("SJF.txt");
     int totalTime = 0, totalTT = 0, totalWT = 0, count = p.size();
     sort(p.begin(), p.end(), [](const Process& a, const Process& b){ return a.arrivalTime < b.arrivalTime; });
@@ -168,7 +168,7 @@ void SJF(vector<Process> p) {
     out.close();
 }
 
-void PreemptivePriority(vector<Process> p) {
+void PreemptivePriority(vector<Process> p, int q) {
 	priority_queue<tuple<int, int, string>> process;
 	vector<string> processName;
 	vector<int> arrivalTime;
@@ -342,7 +342,7 @@ void RR(vector<Process> p, int quantum){
 	out.close();
 }
 
-void NonpreemptivePriority(vector<Process> p) {
+void NonpreemptivePriority(vector<Process> p, int q) {
     ofstream out("Priority (Nonpreemptive).txt");
     int totalTime = 0, totalTT = 0, totalWT = 0, count = p.size();
     sort(p.begin(), p.end(), [](const Process& a, const Process& b){ return a.arrivalTime < b.arrivalTime; });
@@ -381,19 +381,17 @@ void NonpreemptivePriority(vector<Process> p) {
     out.close();
 }
 
-typedef void (*schedule_ptr)(vector<Process>);
+typedef void (*schedule_ptr)(vector<Process>, int);
 
 schedule_ptr schedule_methods[] = {
-    FCFS, SRTN, SJF, PreemptivePriority, NonpreemptivePriority
+    FCFS, SRTN, SJF, PreemptivePriority, NonpreemptivePriority, RR
 };
 
 int main() {
     int q;
     vector<Process> p = readFile("Input.txt", q);
 
-	RR(p, q);
-    for(int i = 0; i < 5; ++i)
-        schedule_methods[i](p);
+    for (int i = 0; i < 6; ++i) schedule_methods[i](p, q);
 	
     return 0;
 }
