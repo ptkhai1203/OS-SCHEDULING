@@ -134,7 +134,7 @@ void SJF(vector<Process> p, int q) {
     int totalTime = 0, totalTT = 0, totalWT = 0, count = p.size();
     sort(p.begin(), p.end(), [](const Process& a, const Process& b){ return a.arrivalTime < b.arrivalTime; });
     vector<Process> temp;
-	while (true) {
+	while (p.size()) {
 		if (p[0].arrivalTime == 0) {
 			temp.push_back(p[0]);
 			p.erase(p.begin());
@@ -143,7 +143,19 @@ void SJF(vector<Process> p, int q) {
 	}
     map<string, int> TT, WT;
     out << "Scheduling chart: 0";
-    while (p.size() || temp.size()) {
+    while (p.size() != 0 || temp.size() != 0) {
+		if (temp.size() == 0) {
+			out << " - " << p[0].arrivalTime;
+			int push = p[0].arrivalTime;
+			totalTime = p[0].arrivalTime;
+			while (p.size()) {
+				if (p[0].arrivalTime == push) {
+					temp.push_back(p[0]);
+					p.erase(p.begin());
+				}
+				else break;
+			}
+		}
 		sort(temp.begin(), temp.end(), [](const Process& a, const Process& b){ return a.burst < b.burst; });
         totalTime += temp[0].burst;
         TT.insert({temp[0].name, totalTime - temp[0].arrivalTime});
@@ -347,7 +359,7 @@ void NonpreemptivePriority(vector<Process> p, int q) {
     int totalTime = 0, totalTT = 0, totalWT = 0, count = p.size();
     sort(p.begin(), p.end(), [](const Process& a, const Process& b){ return a.arrivalTime < b.arrivalTime; });
     vector<Process> temp;
-    while (true) {
+    while (p.size()) {
 		if (p[0].arrivalTime == 0) {
 			temp.push_back(p[0]);
 			p.erase(p.begin());
@@ -357,6 +369,18 @@ void NonpreemptivePriority(vector<Process> p, int q) {
     map<string, int> TT, WT;
     out << "Scheduling chart: 0";
     while (p.size() || temp.size()) {
+		if (temp.size() == 0) {
+			out << " - " << p[0].arrivalTime;
+			int push = p[0].arrivalTime;
+			totalTime = p[0].arrivalTime;
+			while (p.size()) {
+				if (p[0].arrivalTime == push) {
+					temp.push_back(p[0]);
+					p.erase(p.begin());
+				}
+				else break;
+			}
+		}
 		sort(temp.begin(), temp.end(), [](const Process& a, const Process& b){ return a.priority < b.priority; });
         totalTime += temp[0].burst;
         TT.insert({temp[0].name, totalTime - temp[0].arrivalTime});
