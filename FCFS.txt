@@ -1,5 +1,0 @@
-Scheduling chart: 0~P3~4~P1~7~P2~8
-P1: 	 TT = 0 WT = -3
-P2: 	 TT = -11 WT = -12
-P3: 	 TT = 4 WT = 0
-Average:	 TT = -2.33333	WT = -5
