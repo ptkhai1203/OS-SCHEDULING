@@ -34,19 +34,28 @@ vector<Process> readFile(string filename, int& quanTum){
     return p;
 }
 
-void FCFS(vector<Process> p){
+void FCFS(vector<Process> p, int q){
     vector<string> chart; 
+	int cntP = p.size();
     sort(p.begin(), p.end(), [&](const Process& a, const Process& b){return a.arrivalTime < b.arrivalTime;});
     map<string, pair<int, int>> t;
     int time = 0;
-   
-    for(int i = 0; i < p.size(); ++i){
-        chart.push_back(to_string(time));
-        chart.push_back(p[i].name);
-        time += p[i].burst; 
-        t[p[i].name].first = time - p[i].arrivalTime;
-        t[p[i].name].second = t[p[i].name].first - p[i].burst;
-    }
+	for(; p.size(); ++time){
+		if(time == p[0].arrivalTime){
+			chart.push_back(to_string(time));
+			chart.push_back(p[0].name);
+			if(p.size() > 1 && time + 1 != p[1].arrivalTime){
+				chart.push_back(to_string(time + p[0].burst));
+				chart.push_back("IDLE");
+			}
+			time += p[0].burst;
+			t[p[0].name].first = time - p[0].arrivalTime;
+			t[p[0].name].second = t[p[0].name].first - p[0].burst;
+			time--;
+			p.erase(p.begin());
+		}
+	}
+
     chart.push_back(to_string(time));
     freopen("FCFS.txt", "w", stdout);
     cout << "Scheduling chart: ";
@@ -61,11 +70,11 @@ void FCFS(vector<Process> p){
         totalWT += m.second.second;
         cout << m.first << ": \t TT = " << m.second.first << ' ' << "WT = " << m.second.second << '\n';
     }
-    cout << "Average:\t TT = " << 1.0 * totalTT / p.size() << "\tWT = " << 1.0 * totalWT / p.size();
+    cout << "Average:\t TT = " << 1.0 * totalTT / cntP << "\tWT = " << 1.0 * totalWT / cntP;
 	fclose(stdout);
 }
 
-void SRTN(vector<Process> p){
+void SRTN(vector<Process> p, int q){
     vector<Process> pp = p;
     priority_queue<Process, vector<Process>, Process> pq;
     sort(p.begin(), p.end(), [&](const Process& a, const Process& b){return a.arrivalTime > b.arrivalTime;});
@@ -73,6 +82,7 @@ void SRTN(vector<Process> p){
     map<string, int> TT;
     map<string, int> WT;
     Process cur = p.back();
+	bool done = false;
 	p.pop_back();
 	while(p.back().arrivalTime == 0){
 		pq.push(p.back());
@@ -86,9 +96,10 @@ void SRTN(vector<Process> p){
             p.pop_back();
         }
         if(!pq.empty()){
-			if(cur.burst == 0){
+			if(cur.burst <= 0 && done == true){
 				cur = pq.top();
 				pq.pop();
+				done ^= 1;
 			}
             else if(pq.top().burst < cur.burst){
                 if(cur.burst > 0)
@@ -102,14 +113,25 @@ void SRTN(vector<Process> p){
         cur.burst--;
 		time++;
         if(cur.burst == 0){
+			done = true;
             TT[cur.name] = time - cur.arrivalTime;
             chart.push_back(cur.name);
             chart.push_back(to_string(time));
+			if(p.size() > 1 && time + 1 != p[1].arrivalTime && pq.empty()){
+				chart.push_back("IDLE");
+				chart.push_back(to_string(p[1].arrivalTime));
+			}
+			else if(p.size() == 1 && time + 1 != p[1].arrivalTime && pq.empty()){
+				chart.push_back("IDLE");
+				chart.push_back(to_string(p[0].arrivalTime));
+			}
         }
     } 
-	TT[cur.name] = time + cur.burst - cur.arrivalTime;
-	chart.push_back(cur.name);
-	chart.push_back(to_string(time + cur.burst));
+	if(cur.burst > 0){
+		TT[cur.name] = time + cur.burst - cur.arrivalTime;
+		chart.push_back(cur.name);
+		chart.push_back(to_string(time + cur.burst));
+	}
     int totalTT = 0;
     int totalWT = 0;
     for(auto _p : pp){
@@ -129,12 +151,12 @@ void SRTN(vector<Process> p){
 	fclose(stdout);
 }
 
-void SJF(vector<Process> p) {
+void SJF(vector<Process> p, int q) {
     ofstream out("SJF.txt");
     int totalTime = 0, totalTT = 0, totalWT = 0, count = p.size();
     sort(p.begin(), p.end(), [](const Process& a, const Process& b){ return a.arrivalTime < b.arrivalTime; });
     vector<Process> temp;
-	while (true) {
+	while (p.size()) {
 		if (p[0].arrivalTime == 0) {
 			temp.push_back(p[0]);
 			p.erase(p.begin());
@@ -143,7 +165,19 @@ void SJF(vector<Process> p) {
 	}
     map<string, int> TT, WT;
     out << "Scheduling chart: 0";
-    while (p.size() || temp.size()) {
+    while (p.size() != 0 || temp.size() != 0) {
+		if (temp.size() == 0) {
+			out << " - " << p[0].arrivalTime;
+			int push = p[0].arrivalTime;
+			totalTime = p[0].arrivalTime;
+			while (p.size()) {
+				if (p[0].arrivalTime == push) {
+					temp.push_back(p[0]);
+					p.erase(p.begin());
+				}
+				else break;
+			}
+		}
 		sort(temp.begin(), temp.end(), [](const Process& a, const Process& b){ return a.burst < b.burst; });
         totalTime += temp[0].burst;
         TT.insert({temp[0].name, totalTime - temp[0].arrivalTime});
@@ -168,7 +202,7 @@ void SJF(vector<Process> p) {
     out.close();
 }
 
-void PreemptivePriority(vector<Process> p) {
+void PreemptivePriority(vector<Process> p, int q) {
 	priority_queue<tuple<int, int, string>> process;
 	vector<string> processName;
 	vector<int> arrivalTime;
@@ -342,12 +376,12 @@ void RR(vector<Process> p, int quantum){
 	out.close();
 }
 
-void NonpreemptivePriority(vector<Process> p) {
+void NonpreemptivePriority(vector<Process> p, int q) {
     ofstream out("Priority (Nonpreemptive).txt");
     int totalTime = 0, totalTT = 0, totalWT = 0, count = p.size();
     sort(p.begin(), p.end(), [](const Process& a, const Process& b){ return a.arrivalTime < b.arrivalTime; });
     vector<Process> temp;
-    while (true) {
+    while (p.size()) {
 		if (p[0].arrivalTime == 0) {
 			temp.push_back(p[0]);
 			p.erase(p.begin());
@@ -357,6 +391,18 @@ void NonpreemptivePriority(vector<Process> p) {
     map<string, int> TT, WT;
     out << "Scheduling chart: 0";
     while (p.size() || temp.size()) {
+		if (temp.size() == 0) {
+			out << " - " << p[0].arrivalTime;
+			int push = p[0].arrivalTime;
+			totalTime = p[0].arrivalTime;
+			while (p.size()) {
+				if (p[0].arrivalTime == push) {
+					temp.push_back(p[0]);
+					p.erase(p.begin());
+				}
+				else break;
+			}
+		}
 		sort(temp.begin(), temp.end(), [](const Process& a, const Process& b){ return a.priority < b.priority; });
         totalTime += temp[0].burst;
         TT.insert({temp[0].name, totalTime - temp[0].arrivalTime});
@@ -381,19 +427,17 @@ void NonpreemptivePriority(vector<Process> p) {
     out.close();
 }
 
-typedef void (*schedule_ptr)(vector<Process>);
+typedef void (*schedule_ptr)(vector<Process>, int);
 
 schedule_ptr schedule_methods[] = {
-    FCFS, SRTN, SJF, PreemptivePriority, NonpreemptivePriority
+    FCFS, SRTN, SJF, PreemptivePriority, NonpreemptivePriority, RR
 };
 
 int main() {
     int q;
     vector<Process> p = readFile("Input.txt", q);
 
-	RR(p, q);
-    for(int i = 0; i < 5; ++i)
-        schedule_methods[i](p);
-	
+    // for (int i = 0; i < 6; ++i) schedule_methods[i](p, q);
+	SRTN(p, q);
     return 0;
 }
