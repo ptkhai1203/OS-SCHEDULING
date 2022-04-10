@@ -40,35 +40,7 @@ void FCFS(vector<Process> p, int q){
     sort(p.begin(), p.end(), [&](const Process& a, const Process& b){return a.arrivalTime < b.arrivalTime;});
     map<string, pair<int, int>> t;
     int time = 0;
-	queue<Process> pq;
-	for(auto x : p)
-		pq.push(x);
-
-	// while(!pq.empty()){
-	// 	Process tp = pq.front();
-	// 	pq.pop();
-	// 	Process nxt;
-	// 	if(!pq.empty())
-	// 		nxt = pq.front();
-	// 	if(time == tp.arrivalTime){
-	// 		chart.push_back(to_string(time));
-	// 		chart.push_back(tp.name);
-	// 		time += tp.burst;
-	// 		t[tp.name].first = time - tp.arrivalTime;
-	// 		t[tp.name].second = t[tp.name].first - tp.burst;
-	// 		if(time < nxt.arrivalTime){
-	// 			chart.push_back(to_string(time + tp.burst));
-	// 			chart.push_back("IDLE");
-	// 		}
-	// 	}
-	// 	else if(tp.arrivalTime < time){
-	// 		chart.push_back(to_string(time));
-	// 		chart.push_back(tp.name);
-	// 		time += tp.burst;
-	// 		t[tp.name].first = time - tp.arrivalTime;
-	// 		t[tp.name].second = t[tp.name].first - tp.burst;
-	// 	}
-	// }
+	
 	for(; p.size(); ++time){
 		if(time == p[0].arrivalTime){
 			chart.push_back(to_string(time));
