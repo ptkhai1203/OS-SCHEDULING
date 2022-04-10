@@ -437,7 +437,6 @@ int main() {
     int q;
     vector<Process> p = readFile("Input.txt", q);
 
-    // for (int i = 0; i < 6; ++i) schedule_methods[i](p, q);
-	SRTN(p, q);
+    for (int i = 0; i < 6; ++i) schedule_methods[i](p, q);
     return 0;
 }
