@@ -63,7 +63,7 @@ void FCFS(vector<Process> p, int q){
 				chart.push_back("IDLE");
 			}
 			time += p[0].burst;
-			t[p[0].name].first = time + p[0].arrivalTime - p[0].arrivalTime;
+			t[p[0].name].first = time  - p[0].arrivalTime;
 			t[p[0].name].second = t[p[0].name].first - p[0].burst;
 			time--;
 			p.erase(p.begin());
