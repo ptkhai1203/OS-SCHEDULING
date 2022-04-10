@@ -40,16 +40,30 @@ void FCFS(vector<Process> p, int q){
     sort(p.begin(), p.end(), [&](const Process& a, const Process& b){return a.arrivalTime < b.arrivalTime;});
     map<string, pair<int, int>> t;
     int time = 0;
+	
 	for(; p.size(); ++time){
 		if(time == p[0].arrivalTime){
 			chart.push_back(to_string(time));
 			chart.push_back(p[0].name);
-			if(p.size() > 1 && time + 1 != p[1].arrivalTime){
+			if(p.size() > 1 && time + 1 + p[0].burst < p[1].arrivalTime){
 				chart.push_back(to_string(time + p[0].burst));
 				chart.push_back("IDLE");
 			}
 			time += p[0].burst;
 			t[p[0].name].first = time - p[0].arrivalTime;
+			t[p[0].name].second = t[p[0].name].first - p[0].burst;
+			time--;
+			p.erase(p.begin());
+		}
+		else if(time > p[0].arrivalTime){
+			chart.push_back(to_string(time));
+			chart.push_back(p[0].name);
+			if(p.size() > 1 && time + 1 + p[0].arrivalTime < p[1].arrivalTime){
+				chart.push_back(to_string(time + p[0].arrivalTime + p[0].burst));
+				chart.push_back("IDLE");
+			}
+			time += p[0].burst;
+			t[p[0].name].first = time + p[0].arrivalTime - p[0].arrivalTime;
 			t[p[0].name].second = t[p[0].name].first - p[0].burst;
 			time--;
 			p.erase(p.begin());
